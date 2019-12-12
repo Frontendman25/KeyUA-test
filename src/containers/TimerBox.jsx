@@ -8,16 +8,12 @@ export default class TimerBox extends PureComponent {
     timerResume: true,
     timeSet: false,
     minutes: 0,
-    seconds: 10,
+    seconds: 0,
     interval: 1000,
     halfway: 0,
     secondsOfEnding: 0,
-    afterTimerEnd: false
-  }
-
-  componentDidMount() {
-    let { minutes, seconds } = this.state
-    this.setState({ halfway: Math.floor((minutes * 60 + seconds) / 2) })
+    afterTimerEnd: false,
+    firstEnvoke: false
   }
 
   componentDidUpdate() {
@@ -64,10 +60,19 @@ export default class TimerBox extends PureComponent {
     }
   }
 
+  setHalfway = () => {
+    if (!this.state.firstEnvoke){
+      let { minutes, seconds } = this.state
+      this.setState({ halfway: Math.floor((minutes * 60 + seconds) / 2) })
+    }
+  }
+
   timerStart = (interval = 1000) => {
+    this.setHalfway()
+
     clearInterval(this.timer)
     this.setState(
-      { timeSet: true, timerStarted: true, timerPaused: true, interval },
+      { timeSet: true, timerStarted: true, timerPaused: true, firstEnvoke: true, interval },
       () => {
         let { interval } = this.state
 
@@ -99,12 +104,15 @@ export default class TimerBox extends PureComponent {
   }
 
   onSetIntervalTime = interval => {
+    this.setHalfway()
+
     clearInterval(this.timer)
 
     this.setState({
       timeSet: true,
       timerStarted: true,
       timerPaused: true,
+      firstEnvoke: true,
       interval
     })
 
@@ -121,10 +129,11 @@ export default class TimerBox extends PureComponent {
       timerStarted,
       timerPaused,
       timeSet,
-      afterTimerEnd
+      afterTimerEnd,
+      firstEnvoke
     } = this.state
 
-    let currentFullTime = minutes * 60 + seconds
+    let currentFullTime = (minutes * 60) + seconds
     let halfwayStr = ''
     let showMinutes = null
 
@@ -144,7 +153,7 @@ export default class TimerBox extends PureComponent {
       )
     }
 
-    if (!timerStarted && !timeSet && afterTimerEnd) {
+    if (!timerStarted && !timeSet && !firstEnvoke) {
       showMinutes = (
         <li
           className='list-group-item col-2'
@@ -176,7 +185,7 @@ export default class TimerBox extends PureComponent {
         <div className='container'>
           <h1>Countdown Timer SPA</h1>
 
-          {halfwayStr ? (
+          {halfwayStr && firstEnvoke ? (
             <div
               className={`alert alert-warning ${afterTimerEnd &&
                 'clr-red blinking'}`}
