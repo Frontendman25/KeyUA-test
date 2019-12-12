@@ -8,7 +8,7 @@ export default class TimerBox extends PureComponent {
     timerResume: true,
     timeSet: false,
     minutes: 0,
-    seconds: 3,
+    seconds: 0,
     interval: 1000,
     halfway: 0,
     secondsOfEnding: 0,
